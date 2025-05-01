@@ -96,7 +96,7 @@ function skynet.dispatch(typename, func) end
 ---* 你需要挂起一个请求，等将来时机满足，再回应它。而回应的时候已经在别的 coroutine 中了。
 ---针对这种情况，你可以调用 skynet.response(skynet.pack) 获得一个闭包，以后调用这个闭包即可把回应消息发回。
 ---这里的参数 skynet.pack 是可选的，你可以传入其它打包函数，默认即是 skynet.pack 。
----@param msg lightuserdata|string
+---@param msg? lightuserdata|string
 ---@param sz? integer
 function skynet.ret(msg, sz) end
 
@@ -263,14 +263,16 @@ function skynet.exit() end
 --- 用于启动一个新的 Lua 服务。name 是脚本的名字（不用写 .lua 后缀）。只有被启动的脚本的 start 函数返回后，这个 API 才会返回启动的服务的地址，这是一个阻塞 API 。如果被启动的脚本在初始化环节抛出异常，或在初始化完成前就调用 skynet.exit 退出，skynet.newservice 都会抛出异常。如果被启动的脚本的 start 函数是一个永不结束的循环，那么 newservice 也会被永远阻塞住。
 --- > 启动参数其实是以字符串拼接的方式传递过去的。所以不要在参数中传递复杂的 Lua 对象。接收到的参数都是字符串，且字符串中不可以有空格（否则会被分割成多个参数）。这种参数传递方式是历史遗留下来的，有很多潜在的问题。目前推荐的惯例是，让你的服务响应一个启动消息。在 newservice 之后，立刻调用 skynet.call 发送启动请求。
 ---@param name string #脚本名字
----@vararg string|number #可选参数
+---@vararg string|number #可选参数\
+---@return integer
 function skynet.newservice(name, ...) end
 
---- 启动一个全局唯一服务
+--- 启动一个全局唯一服务，如果该服务已经启动，则返回已启动的服务地址。
 ---* global 为 true 表示启动全局服务 ，信息从后面参数获取
 ---* global 为其他的，表示在本地启动一个本地唯一的服务，global 就代表了服务名
 ---@param global boolean|string
 ---@vararg any
+---@return integer
 function skynet.uniqueservice(global, ...) end
 
 --- 查询一个全局服务
@@ -278,6 +280,7 @@ function skynet.uniqueservice(global, ...) end
 ---* global 为其他的，表示在本地启动一个本地唯一的服务，global 就代表了服务名
 ---@param global boolean|string
 ---@vararg any
+---@return integer
 function skynet.queryservice(global, ...) end
 
 ------------------ 时钟和线程 ------------------------
